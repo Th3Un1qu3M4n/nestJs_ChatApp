@@ -1,33 +1,27 @@
 import React, { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
-// import "./ChatRoom.css";
-// import useChat from "../useChat";
-
 const ChatRoom = (props) => {
-//   const { roomId } = props.match.params; // Gets roomId from URL
-//   const { messages, sendMessage } = useChat(roomId); // Creates a websocket and manages messaging
-//   const [newMessage, setNewMessage] = React.useState(""); // Message to be sent
 
+
+  const [messages, setMessages] = useState([])
+  const [messageText, setMessageText] = useState('')
+  const [name, setName] = useState('')
+  const [joined, setJoined] = useState()
+  const [typingString, setTypingString] = useState('')
+  const [socket, setSocket] = useState(io('localhost:8000'));
+  // var socket;
   
-
-//   const handleSendMessage = () => {
-//     sendMessage(newMessage);
-//     setNewMessage("");
-//   };
-
-    const socket = io('localhost:8000')
-    const [messages, setMessages] = useState([])
-    const [messageText, setMessageText] = useState('')
-    const [name, setName] = useState('')
-    const [joined, setJoined] = useState(false)
-    const [typingString, setTypingString] = useState('')
-
+    // useEffect(()=>{
+    //   console.log("setting socket")
+    //   let socket = io('localhost:8000')
+    // setSocket(socket)
+      
+    // },[])
 
     useEffect(()=>{
       
       socket.on('message', (message) => {
-        // console.log("Total Messages", messages)
         setMessages([...messages, message])
       })
 
@@ -40,11 +34,20 @@ const ChatRoom = (props) => {
       })
     })
 
-    useEffect(()=>{
-      
-    },[joined])
+    // useEffect(()=>{
+    //   socket.emit('join', {name: name}, () => {
+    //     console.log("joining chat room")
+    //     setJoined(true)
+    //     setName(name)
+    //     socket.emit('findAllMessages', {}, (response) =>{
+    //       setMessages(response)
+    //     })
+    //   })
+    // },[socket])
 
-    const joinChat = () => {
+    const joinChat = async () => {
+      // setSocket(await io('localhost:8000'))
+      console.log("socket in joinChat ",socket)
       socket.emit('join', {name: name}, () => {
         console.log("joining chat room")
         setJoined(true)
@@ -57,6 +60,8 @@ const ChatRoom = (props) => {
 
 
     const sendMessage = () => {
+      console.log("sending Messge");
+      console.log('socket: ',socket)
       socket.emit('createMessage', {name: name, text: messageText}, ()=>{
         setMessageText('')
       } )
@@ -65,9 +70,9 @@ const ChatRoom = (props) => {
     let timeout;
 
     const emitTyping = () => {
-      socket.emit('typing', {isTyping: true})
+      socket.emit('typing', {name: name, isTyping: true})
       timeout = setTimeout(()=>{
-        socket.emit('typing', {isTyping: false})
+        socket.emit('typing', {name: name, isTyping: false})
       }, 2000)
     }
     const handleMessageTextChange = (event) => {
